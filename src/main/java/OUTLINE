@@ -1,0 +1,21 @@
+Part 1 training
+-Let the user read the article or some text, ask them to rate it from 0-100 (as percents)
+-User should read/evaluate at least 6 of such articles
+-Each time user inserts a new article, evaluate the distance (classification) with each other article that already exists
+-Save the evaluation map
+
+Part 2 mining
+-use the map to train a new model where output value is the user-evaluated value of the article.
+
+-Evaluate the new article with each other article in question to obtain the array [a,b,c,...bestmatch]
+-Assume that article has the value of "bestmatch" to obtain an array that will be used for prediction [a,b,c,...
+-Get the predicted value of the new article, and if "highest" or high enough, then alert the user about what article to read.
+
+
+
+IDEA for a fast comparison algorithm of two articles:
+-Make a word-map of the article 1, and sort the frequency as frequency 1.
+-Make a word-map of the article 2, and sort the frequency as frequency 2.
+-select only the words that appear in frequency 1 and 2, in sorted order.
+-zip the frequency1 as f1.zip, and frequency2 as f2.zip
+-read the bytes of f1 into array1 and f2 into array2 and then do the cosine distance between the two.
