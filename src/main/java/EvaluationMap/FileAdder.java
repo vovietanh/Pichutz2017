@@ -4,7 +4,6 @@ import TextClassifier.DocumentCompare;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,11 +11,10 @@ import java.util.List;
  * Created by damir on 07/02/17.
  */
 public class FileAdder {
-    private String slash = java.io.File.separator;
 
 
     public void add(String fname, double value) throws IOException {
-        String in = getFname(fname);
+        String in = new Misc().getFname(fname);
         //get all files from a TextFiles directory
         List<File> files = getFiles();
         //compare with each file into a map <oldFile, value>
@@ -25,20 +23,20 @@ public class FileAdder {
         historyAppend(comparisons,in);
         //now update the evaluationMap's existing lines
         updateExistingLines(comparisons,value);
-        //TODO now append the comparisons
+
         BufferedWriter write = new BufferedWriter(new FileWriter("./BRAIN/evaluationMap.csv",true));
         String wline = "";
         for(String key:comparisons.keySet()){
             double v = comparisons.get(key);
             wline=wline+v+",";
         }
-        wline = wline+"["+value+"]|"+value+"_"+in;
-        wline = finalFormat(wline);
+        wline = wline+"["+value+"]|"+in;
+        wline = new Misc().finalFormat(wline);
         write.write(wline+"\n");
         write.close();
 
         //move the file
-        FileUtils.copyFile(new File(fname), new File("./BRAIN/TextFiles/"+value+"_"+in));
+        FileUtils.copyFile(new File(fname), new File("./BRAIN/TextFiles/"+in));
     }
 
     private void updateExistingLines(HashMap<String, Double> comparisons, double value) throws IOException {
@@ -49,7 +47,7 @@ public class FileAdder {
         while((line = read.readLine())!=null){
             String wline = ""; //line to write
             String[]spMain = line.split("\\|");
-            //make an array to sort with new value
+            //make an array with new value
             String[]arrsp=spMain[0].split(",");
             if(arrsp.length==1){
                 wline = wline+comparisons.get(spMain[1]);
@@ -63,13 +61,12 @@ public class FileAdder {
                     arr[i]  = Double.parseDouble(arrsp[i]);
                 }
                 arr[arrsp.length-1] = comparisons.get(spMain[1]);
-                Arrays.sort(arr);
                 for(double d:arr){
                     wline = wline+","+d;
                 }
                 wline = wline+","+arrsp[arrsp.length-1]+"|"+spMain[1];
                 wline = wline.substring(1,wline.length());
-                wline = finalFormat(wline);
+                wline = new Misc().finalFormat(wline);
                 write.write(wline+"\n");
             }
         }
@@ -81,22 +78,7 @@ public class FileAdder {
     }
 
 
-    private String finalFormat(String in){
-      //  0.7147092934200221,0.7815604966697735,0.5739374092373368,[0.3]|0.3_alice_b.txt
-    String[] sp = in.split("\\|");
-    String[] n = sp[0].split(",");
-    double[]d = new double[n.length-1];
-    for(int t=0;t<n.length-1;t++){
-        d[t]=Double.parseDouble(n[t]);
-    }
-    Arrays.sort(d);
-    String ret = "";
-    for(double a:d){ret = ret+","+a;}
-    ret=ret+","+n[n.length-1];
-    ret=ret+"|"+sp[1];
-    ret=ret.substring(1,ret.length());
-    return ret;
-    }
+
 
     private List<File> getFiles() {
         return getFilesFrom("./BRAIN/TextFiles");
@@ -136,18 +118,17 @@ public class FileAdder {
         if(!name.exists()){throw new Exception();}
 
         cleanTextFiles(); //YOU HAVE BEEN WARNED!!!
-        String copyTo = getFname(fname);
-        String copyToPath = "BRAIN"+slash+"TextFiles"+slash+value+"_"+copyTo;
+        String copyTo = new Misc().getFname(fname);
+        String copyToPath = "BRAIN/TextFiles/"+copyTo;
         FileUtils.copyFile(name, new File(copyToPath));
         //now, write a new evaluationMap
         newEvaluationMap(value, copyTo);
-
     }
 
     //the evaluation map consists of compare1, compare2,...[uservale]|TheFileName.txt
     private void newEvaluationMap(double value, String copyTo) throws IOException {
         BufferedWriter write = new BufferedWriter(new FileWriter("BRAIN/evaluationMap.csv"));
-        write.write("["+value+"]|"+value+"_"+copyTo+"\n");
+        write.write("["+value+"]|"+copyTo+"\n");
         write.close();
     }
 
@@ -160,11 +141,6 @@ public class FileAdder {
         }
     }
 
-    private String getFname(String copyTo) {
-        if(copyTo.contains(slash)){
-            copyTo = copyTo.substring(copyTo.lastIndexOf(slash)+1,copyTo.length());
-        }
-        return copyTo;
-    }
+
 
 }
